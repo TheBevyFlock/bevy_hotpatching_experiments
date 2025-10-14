@@ -2,35 +2,35 @@
 members = [".", "examples/*", "macros"]
 
 [package]
-name = "bevy_simple_subsecond_system"
-version = "0.2.0"
+name = "bevy_hotpatching_experiments"
+version = "0.3.0"
 edition = "2024"
 authors = ["Jan Hohenheim <jan@hohenheim.ch>"]
 exclude = ["examples/"]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/janhohenheim/bevy_simple_subsecond_system"
+repository = "https://github.com/janhohenheim/bevy_hotpatching_experiments"
 description = "Hotpatch your Bevy systems, allowing you to change their code while the app is running and directly seeing the results!"
 keywords = ["bevy", "hotpatch", "subsecond", "dioxus"]
 readme = "readme.md"
 categories = ["game-development"]
 
 [dependencies]
-bevy_ecs = { version = "0.16.0" }
-bevy_log = { version = "0.16.0" }
-bevy_app = { version = "0.16.0" }
-bevy_derive = { version = "0.16.0" }
-bevy_platform = { version = "0.16.0" }
-bevy_ecs_macros = { version = "0.16.0" }
-bevy_reflect = { version = "0.16.0" }
-bevy_utils = { version = "0.16.0" }
-bevy_internal = { version = "0.16.0", features = ["track_location"] }
-dioxus-devtools = "0.7.0-alpha.1"
-bevy_simple_subsecond_system_macros = { path = "macros", version = "0.1.9" }
+bevy_ecs = { version = "0.17" }
+bevy_log = { version = "0.17" }
+bevy_app = { version = "0.17" }
+bevy_derive = { version = "0.17" }
+bevy_platform = { version = "0.17" }
+bevy_ecs_macros = { version = "0.17" }
+bevy_reflect = { version = "0.17" }
+bevy_utils = { version = "0.17" }
+bevy_internal = { version = "0.17", features = ["track_location"] }
+dioxus-devtools = "0.7.0-rc.1"
+bevy_hotpatching_experiments_macros = { path = "macros", version = "0.1.9" }
 crossbeam-channel = "0.5.15"
 send_wrapper = "0.6.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-dioxus-cli-config = { version = "0.7.0-alpha.1", features = ["web"] }
+dioxus-cli-config = { version = "0.7.0-rc.1", features = ["web"] }
 serde_json = { version = "1.0" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
@@ -44,7 +44,7 @@ features = [
 ]
 
 [dev-dependencies]
-bevy = { version = "0.16.0", features = ["bevy_ui_debug", "track_location"] }
+bevy = { version = "0.17", features = ["bevy_ui_debug", "track_location"] }
 
 [lints.clippy]
 # Bevy supplies arguments to systems via dependency injection, so it's natural for systems to

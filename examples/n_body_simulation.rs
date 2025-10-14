@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_simple_subsecond_system::prelude::*;
+use bevy_hotpatching_experiments::prelude::*;
 
 fn main() -> AppExit {
     App::new()
@@ -109,7 +109,7 @@ fn setup(
 }
 
 fn react_to_click(
-    trigger: Trigger<Pointer<Click>>,
+    trigger: On<Pointer<Click>>,
     planet_assets: Res<GameAssets>,
     mut commands: Commands,
     bodies: Query<Entity, Or<(With<Planet>, With<Attractor>)>>,

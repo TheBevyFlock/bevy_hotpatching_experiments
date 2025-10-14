@@ -1,13 +1,13 @@
 # Bevy Simple Subsecond System
 
-[![crates.io](https://img.shields.io/crates/v/bevy_simple_subsecond_system)](https://crates.io/crates/bevy_simple_subsecond_system)
-[![docs.rs](https://docs.rs/bevy_simple_subsecond_system/badge.svg)](https://docs.rs/bevy_simple_subsecond_system)
+[![crates.io](https://img.shields.io/crates/v/bevy_hotpatching_experiments)](https://crates.io/crates/bevy_hotpatching_experiments)
+[![docs.rs](https://docs.rs/bevy_hotpatching_experiments/badge.svg)](https://docs.rs/bevy_hotpatching_experiments)
 
 
 Hotpatch your Bevy systems and observers, allowing you to change their code while the app is running and directly see the results!
 This is an intermediate solution you can use until [Bevy implements this feature upstream](https://github.com/bevyengine/bevy/issues/19296).
 
-Powered by [Dioxus' subsecond](https://github.com/DioxusLabs/dioxus/releases/tag/v0.7.0-alpha.0#rust-hot-patching)  
+Powered by [Dioxus' subsecond](https://github.com/DioxusLabs/dioxus/releases/tag/v0.7.0-alpha.0#rust-hot-patching)
 Please report all hotpatch-related problems to them :)
 
 
@@ -19,7 +19,7 @@ Please report all hotpatch-related problems to them :)
 
 First, we need to install the Dioxus CLI of the newest alpha build.
 ```sh
-cargo install dioxus-cli@0.7.0-alpha.1
+cargo install dioxus-cli@0.7.0-rc.1
 ```
 > Building the CLI like this can take a while. To speed this up,
 > consider setting up [cargo-binstall](https://github.com/cargo-bins/cargo-binstall) first.
@@ -42,7 +42,7 @@ If that is not enough, create or edit either a global `~\.cargo\config.toml` or 
 [profile.dev]
 codegen-units = 1
 ```
-Note that this may increase compile times significantly if your crate is very large. 
+Note that this may increase compile times significantly if your crate is very large.
 When changing this number, always run `cargo clean` before rebuilding.
 If you can verify that this solved your issue,
 try increasing this number until you find a happy middle ground. For reference, the default number
@@ -136,14 +136,14 @@ This repo also includes `./.cargo/config_faster_builds.toml` which contains more
 Add the crate to your dependencies.
 
 ```sh
-cargo add bevy_simple_subsecond_system
+cargo add bevy_hotpatching_experiments
 ```
 
 Then add the plugin to your app and annotate any system you want with `#[hot]`:
 
 ```rust,ignore
 use bevy::prelude::*;
-use bevy_simple_subsecond_system::prelude::*;
+use bevy_hotpatching_experiments::prelude::*;
 
 fn main() -> AppExit {
     App::new()
@@ -204,7 +204,7 @@ BEVY_ASSET_ROOT="." dx serve --hot-patch --example patch_on_update
 - Only [the topmost binary is hotpatched](https://github.com/DioxusLabs/dioxus/issues/4160), meaning your app is not allowed to have a `lib.rs` or a workspace setup.
 - Attaching a debugger is problaby not going to work. Let me know if you try!
 - I did not test all possible ways in which systems can be used. Does piping work? Does `bevy_mod_debugdump` still work? Maybe. Let me know!
-- Only functions that exist when the app is launched are considered while hotpatching. This means that if you have a system `A` that calls a function `B`, 
+- Only functions that exist when the app is launched are considered while hotpatching. This means that if you have a system `A` that calls a function `B`,
   changing `B` will only work at runtime if that function existed already when the app was launched.
 
 ## Language Servers
@@ -215,7 +215,7 @@ If you're running into issues, you can configure your editor like this:
 
 ```json
 "rust-analyzer.procMacro.ignored": {
-    "bevy_simple_subsecond_system_macros": [
+    "bevy_hotpatching_experiments_macros": [
         "hot"
     ]
 },
@@ -235,7 +235,7 @@ lspconfig.rust_analyzer.setup({
     ["rust-analyzer"] = {
       procMacro = {
         ignored = {
-          bevy_simple_subsecond_system_macros = { "hot" },
+          bevy_hotpatching_experiments_macros = { "hot" },
         },
       },
       diagnostics = {
@@ -255,7 +255,7 @@ There are some more things you can hot-patch, but they come with extra caveats r
 <summary>Limitations when using these features</summary>
 
 - Annotating a function relying on local state will clear it every frame. Notably, this means you should not use `#[hot(rerun_on_hot_patch)]` or `#[hot(hot_patch_signature)]` on a system that uses any of the following:
-  - `EventReader`
+  - `MessageReader`
   - `Local`
   - Queries filtering with `Added`, `Changed`, or `Spawned`
 - Some signatures are not supported, see the tests. Some have `#[hot(rerun_on_hot_patch)]` or `#[hot(hot_patch_signature)]` commented out to indicate this
@@ -288,6 +288,7 @@ This allows you to e.g. add additional `Query` or `Res` parameters or modify exi
 
 ## Compatibility
 
-| bevy | bevy_simple_subsecond_system |
+| bevy | bevy_hotpatching_experiments |
 | ---- | ---------------------------- |
+| 0.17 | 0.3                          |
 | 0.16 | 0.2                          |

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_simple_subsecond_system::prelude::*;
+use bevy_hotpatching_experiments::prelude::*;
 fn main() -> AppExit {
     App::new()
         .add_plugins(DefaultPlugins)
@@ -15,7 +15,7 @@ fn trigger_greeting(mut commands: Commands) {
 }
 
 #[hot]
-fn greet(_trigger: Trigger<PrintGreeting>) {
+fn greet(_trigger: On<PrintGreeting>) {
     info_once!(
         "Hello from a hotpatched observer! Try changing this string while the app is running!"
     );

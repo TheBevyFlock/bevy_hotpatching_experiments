@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_simple_subsecond_system::prelude::*;
+use bevy_hotpatching_experiments::prelude::*;
 
 fn main() -> AppExit {
     App::new()

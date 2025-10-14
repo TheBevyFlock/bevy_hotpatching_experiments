@@ -1,13 +1,13 @@
 #![allow(unused_mut, unused_variables)]
 use bevy::{
     ecs::{
-        event::EventCursor,
+        message::MessageCursor,
         schedule::ScheduleConfigs,
         system::{ScheduleSystem, SystemParam},
     },
     prelude::*,
 };
-use bevy_simple_subsecond_system::prelude::*;
+use bevy_hotpatching_experiments::prelude::*;
 
 #[test]
 fn add_to_app() {
@@ -158,7 +158,7 @@ fn save_to_previous<C: Component + Clone>(
 }
 
 //#[hot(rerun_on_hot_patch = true)]
-fn apply_config<C: Config>(world: &mut World, mut cursor: Local<EventCursor<AssetEvent<C>>>) {}
+fn apply_config<C: Config>(world: &mut World, mut cursor: Local<MessageCursor<AssetEvent<C>>>) {}
 
 #[hot(rerun_on_hot_patch = true)]
 fn exclusive_mut(world: &mut World) {}
