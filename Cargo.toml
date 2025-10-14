@@ -6,7 +6,6 @@ name = "bevy_hotpatching_experiments"
 version = "0.3.0"
 edition = "2024"
 authors = ["Jan Hohenheim <jan@hohenheim.ch>"]
-exclude = ["examples/"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/janhohenheim/bevy_hotpatching_experiments"
 description = "Hotpatch your Bevy systems, allowing you to change their code while the app is running and directly seeing the results!"
