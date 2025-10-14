@@ -1,10 +1,10 @@
 [package]
-name = "bevy_simple_subsecond_system_macros"
+name = "bevy_hotpatching_experiments_macros"
 version = "0.1.9"
 edition = "2024"
 authors = ["Jan Hohenheim <jan@hohenheim.ch>"]
-description = "Macros for bevy_simple_subsecond_system"
-repository = "https://github.com/janhohenheim/bevy_simple_subsecond_system"
+description = "Macros for bevy_hotpatching_experiments"
+repository = "https://github.com/janhohenheim/bevy_hotpatching_experiments"
 license = "MIT OR Apache-2.0"
 readme = "../readme.md"
 

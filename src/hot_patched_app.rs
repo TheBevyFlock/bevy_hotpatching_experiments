@@ -2,13 +2,11 @@
 //! See [`HotPatchedAppExt::with_hot_patch`] for the main API.
 
 use crate::__macros_internal::__ReloadPositions as ReloadPositions;
-use bevy_app::{
-    App, NonSendMarker, PostStartup, PostUpdate, PreStartup, PreUpdate, Startup, Update,
-};
+use bevy_app::{App, PostStartup, PostUpdate, PreStartup, PreUpdate, Startup, Update};
 use bevy_derive::{Deref, DerefMut};
-use bevy_ecs::prelude::*;
 #[cfg(debug_assertions)]
 use bevy_ecs::system::{Commands, Res};
+use bevy_ecs::{prelude::*, system::NonSendMarker};
 use bevy_ecs_macros::ScheduleLabel;
 use bevy_log::{debug, error};
 
@@ -46,7 +44,7 @@ pub trait HotPatchedAppExt {
     ///
     /// ```ignore
     /// # use bevy::prelude::*;
-    /// # use bevy_simple_subsecond_system::prelude::*;
+    /// # use bevy_hotpatching_experiments::prelude::*;
     ///
     /// App::new()
     ///     .add_plugins(DefaultPlugins)
@@ -140,7 +138,7 @@ impl HotPatchedAppExt for App {
                   mut ran_once: Local<bool>,
                   mut schedules: ResMut<Schedules>,
                   mut commands: Commands,
-                  hotreload_event: EventReader<HotPatched>| {
+                  hotreload_event: MessageReader<HotPatched>| {
                 if hotreload_event.is_empty() {
                     if *ran_once {
                         return;

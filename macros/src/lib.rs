@@ -3,6 +3,7 @@
 
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
+use syn::parse_quote;
 use syn::spanned::Spanned;
 use syn::{
     DeriveInput, FnArg, Ident, ItemFn, LitBool, Pat, PatIdent, ReturnType, Token, Type, TypePath,
@@ -127,7 +128,7 @@ pub fn hot(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     let hot_fn = quote! {
-        ::bevy_simple_subsecond_system::dioxus_devtools::subsecond::HotFn::current(#hotpatched_fn #maybe_generics)
+        ::bevy_hotpatching_experiments::dioxus_devtools::subsecond::HotFn::current(#hotpatched_fn #maybe_generics)
     };
 
     if !hot_patch_signature && !rerun_on_hot_patch {
@@ -147,15 +148,30 @@ pub fn hot(attr: TokenStream, item: TokenStream) -> TokenStream {
         return result.into();
     }
 
+    let output_or_unit = match &sig.output {
+        syn::ReturnType::Default => parse_quote!(()),
+        syn::ReturnType::Type(_, ty) => ty.as_ref().clone(),
+    };
     let maybe_run_call = if rerun_on_hot_patch {
         quote! {
-            let name = ::bevy_simple_subsecond_system::__macros_internal::IntoSystem::into_system(#original_fn_name #maybe_generics).name();
-            ::bevy_simple_subsecond_system::__macros_internal::debug!("Hot-patched and rerunning system {name}");
+            #[allow(unused_braces)]
+            let system = ::bevy_hotpatching_experiments::__macros_internal::IntoSystem::<
+                _,
+                #output_or_unit,
+                _,
+            >::into_system(#original_fn_name #maybe_generics);
+            let name = system.name();
+            ::bevy_hotpatching_experiments::__macros_internal::debug!("Hot-patched and rerunning system {name}");
             #hot_fn.call((world,))
         }
     } else {
         quote! {
-            let name = ::bevy_simple_subsecond_system::__macros_internal::IntoSystem::into_system(#original_fn_name #maybe_generics).name();
+            #[allow(unused_braces)]
+            let name = ::bevy_hotpatching_experiments::__macros_internal::IntoSystem::<
+                _,
+                #output_or_unit,
+                _,
+            >::into_system(#original_fn_name #maybe_generics).name();
             bevy::prelude::debug!("Hot-patched system {name}");
         }
     };
@@ -172,23 +188,23 @@ pub fn hot(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let hotpatched_fn_definition = match has_single_world_param(sig) {
         WorldParam::Mut | WorldParam::Ref => quote! {
-            #vis fn #hotpatched_fn #impl_generics(world: &mut ::bevy_simple_subsecond_system::__macros_internal::World) #where_clause #original_output {
-                if let Some(mut reload_positions) = world.get_resource_mut::<::bevy_simple_subsecond_system::__macros_internal::__ReloadPositions>() {
+            #vis fn #hotpatched_fn #impl_generics(world: &mut ::bevy_hotpatching_experiments::__macros_internal::World) #where_clause #original_output {
+                if let Some(mut reload_positions) = world.get_resource_mut::<::bevy_hotpatching_experiments::__macros_internal::__ReloadPositions>() {
                     reload_positions.insert((file!(), line!(), line!() + #newlines));
                 }
                 #original_wrapper_fn #maybe_generics(world)
             }
         },
         WorldParam::None => quote! {
-            #vis fn #hotpatched_fn #impl_generics(world: &mut ::bevy_simple_subsecond_system::__macros_internal::World) #where_clause #original_output {
-                if let Some(mut reload_positions) = world.get_resource_mut::<::bevy_simple_subsecond_system::__macros_internal::__ReloadPositions>() {
+            #vis fn #hotpatched_fn #impl_generics(world: &mut ::bevy_hotpatching_experiments::__macros_internal::World) #where_clause #original_output {
+                if let Some(mut reload_positions) = world.get_resource_mut::<::bevy_hotpatching_experiments::__macros_internal::__ReloadPositions>() {
                     reload_positions.insert((file!(), line!(), line!() + #newlines));
                 }
-                use ::bevy_simple_subsecond_system::__macros_internal::SystemState;
+                use ::bevy_hotpatching_experiments::__macros_internal::SystemState;
                 let mut __system_state: SystemState<(#(#param_types),*)> = SystemState::new(world);
                 let __unsafe_world = world.as_unsafe_world_cell_readonly();
 
-                let __validation = unsafe { SystemState::validate_param(&__system_state, __unsafe_world) };
+                let __validation = unsafe { SystemState::validate_param(&mut __system_state, __unsafe_world) };
 
                 match __validation {
                     Ok(()) => (),
@@ -199,6 +215,7 @@ pub fn hot(attr: TokenStream, item: TokenStream) -> TokenStream {
                     }
                 }
 
+                #[allow(unused_braces)]
                 let (#(#destructure),*) = __system_state.get_mut(world);
                 let __result = #original_wrapper_fn(#(#param_idents),*);
                 __system_state.apply(world);
@@ -211,15 +228,15 @@ pub fn hot(attr: TokenStream, item: TokenStream) -> TokenStream {
     let result = quote! {
         // Outer entry point: stable ABI, hot-reload safe
         #[cfg(debug_assertions)]
-        #vis fn #original_fn_name #impl_generics(world: &mut ::bevy_simple_subsecond_system::__macros_internal::World) #where_clause #original_output {
+        #vis fn #original_fn_name #impl_generics(world: &mut ::bevy_hotpatching_experiments::__macros_internal::World) #where_clause #original_output {
             use std::any::Any as _;
             let type_id = #hotpatched_fn #maybe_generics.type_id();
-            let contains_system = world.get_resource::<::bevy_simple_subsecond_system::__macros_internal::__HotPatchedSystems>().unwrap().0.contains_key(&type_id);
+            let contains_system = world.get_resource::<::bevy_hotpatching_experiments::__macros_internal::__HotPatchedSystems>().unwrap().0.contains_key(&type_id);
             if !contains_system {
                 let hot_fn_ptr = #hot_fn.ptr_address();
-                let system = move |world: &mut ::bevy_simple_subsecond_system::__macros_internal::World| {
+                let system = move |world: &mut ::bevy_hotpatching_experiments::__macros_internal::World| {
                     let needs_update = {
-                        let mut hot_patched_systems = world.get_resource_mut::<::bevy_simple_subsecond_system::__macros_internal::__HotPatchedSystems>().unwrap();
+                        let mut hot_patched_systems = world.get_resource_mut::<::bevy_hotpatching_experiments::__macros_internal::__HotPatchedSystems>().unwrap();
                         let mut hot_patched_system = hot_patched_systems.0.get_mut(&type_id).unwrap();
                         hot_patched_system.current_ptr = #hot_fn.ptr_address();
                         let needs_update = hot_patched_system.current_ptr != hot_patched_system.last_ptr;
@@ -232,16 +249,16 @@ pub fn hot(attr: TokenStream, item: TokenStream) -> TokenStream {
                     // TODO: we simply ignore the `Result` here, but we should be propagating it
                     let _ = {#maybe_run_call};
                 };
-                world.resource_mut::<::bevy_simple_subsecond_system::__macros_internal::Schedules>()
+                world.resource_mut::<::bevy_hotpatching_experiments::__macros_internal::Schedules>()
                   .add_systems(
-                    ::bevy_simple_subsecond_system::__macros_internal::PreUpdate,
-                    system.in_set(::bevy_simple_subsecond_system::SimpleSubsecondSystemSet::UpdateFunctionPtrs)
+                    ::bevy_hotpatching_experiments::__macros_internal::PreUpdate,
+                    system.in_set(::bevy_hotpatching_experiments::SimpleSubsecondSystemSet::UpdateFunctionPtrs)
                 );
-                let system = ::bevy_simple_subsecond_system::__macros_internal::__HotPatchedSystem {
+                let system = ::bevy_hotpatching_experiments::__macros_internal::__HotPatchedSystem {
                     current_ptr: hot_fn_ptr,
                     last_ptr: hot_fn_ptr,
                 };
-                world.get_resource_mut::<::bevy_simple_subsecond_system::__macros_internal::__HotPatchedSystems>().unwrap().0.insert(type_id, system);
+                world.get_resource_mut::<::bevy_hotpatching_experiments::__macros_internal::__HotPatchedSystems>().unwrap().0.insert(type_id, system);
             }
 
             #hot_fn.call((world,))
@@ -357,9 +374,9 @@ pub fn derive_hot_patch_migrate(input: TokenStream) -> TokenStream {
     let name = &input.ident;
 
     let expanded = quote! {
-        impl ::bevy_simple_subsecond_system::migration::HotPatchMigrate for #name {
+        impl ::bevy_hotpatching_experiments::migration::HotPatchMigrate for #name {
             fn current_type_id() -> ::core::any::TypeId {
-                ::bevy_simple_subsecond_system::dioxus_devtools::subsecond::HotFn::current(|| ::core::any::TypeId::of::<Self>()).call(())
+                ::bevy_hotpatching_experiments::dioxus_devtools::subsecond::HotFn::current(|| ::core::any::TypeId::of::<Self>()).call(())
             }
         }
     };

@@ -8,7 +8,7 @@ pub mod migration;
 use __macros_internal::__HotPatchedSystems as HotPatchedSystems;
 use bevy_app::{App, Last, Plugin, PostStartup, PreUpdate};
 use bevy_ecs::prelude::*;
-pub use bevy_simple_subsecond_system_macros::*;
+pub use bevy_hotpatching_experiments_macros::*;
 pub use dioxus_devtools;
 #[cfg(debug_assertions)]
 use dioxus_devtools::{subsecond::apply_patch, *};
@@ -30,14 +30,14 @@ pub mod prelude {
         hot_patched_app::{HotPatchedAppExt as _, StartupRerunHotPatch},
     };
     pub use crate::migration::*;
-    pub use bevy_simple_subsecond_system_macros::*;
+    pub use bevy_hotpatching_experiments_macros::*;
 }
 
 /// The plugin you need to add to your app:
 ///
 /// ```ignore
 /// use bevy::prelude::*;
-/// use bevy_simple_subsecond_system::prelude::*;
+/// use bevy_hotpatching_experiments::prelude::*;
 ///
 /// App::new()
 ///     .add_plugins(DefaultPlugins)
@@ -134,9 +134,9 @@ impl Plugin for SimpleSubsecondPlugin {
 
             app.init_resource::<HotPatchedSystems>();
 
-            app.add_event::<HotPatched>().add_systems(
+            app.add_message::<HotPatched>().add_systems(
                 Last,
-                move |mut events: EventWriter<HotPatched>| {
+                move |mut events: MessageWriter<HotPatched>| {
                     if receiver.try_recv().is_ok() {
                         events.write_default();
                     }
@@ -153,8 +153,8 @@ impl Plugin for SimpleSubsecondPlugin {
     }
 }
 
-/// Event sent when the hotpatch is applied.
-#[derive(Event, Default)]
+/// Message sent when the hotpatch is applied.
+#[derive(Message, Default)]
 pub struct HotPatched;
 
 /// System set in which components are migrated after a hot patch.

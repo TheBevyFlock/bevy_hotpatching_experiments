@@ -1,13 +1,13 @@
 #![allow(unused_mut, unused_variables)]
 use bevy::{
     ecs::{
-        event::EventCursor,
+        message::MessageCursor,
         schedule::ScheduleConfigs,
         system::{ScheduleSystem, SystemParam},
     },
     prelude::*,
 };
-use bevy_simple_subsecond_system::prelude::*;
+use bevy_hotpatching_experiments::prelude::*;
 
 #[test]
 fn add_to_app() {
@@ -164,7 +164,7 @@ fn save_to_previous<C: Component + Clone>(
 }
 
 #[hot]
-fn apply_config<C: Config>(world: &mut World, mut cursor: Local<EventCursor<AssetEvent<C>>>) {}
+fn apply_config<C: Config>(world: &mut World, mut cursor: Local<MessageCursor<AssetEvent<C>>>) {}
 
 #[hot]
 fn exclusive_mut(world: &mut World) {}
@@ -209,21 +209,17 @@ pub struct Progress {
 }
 
 #[hot]
-fn observe_add(_trigger: Trigger<OnAdd, Transform>) {}
+fn observe_add(_trigger: On<Add, Transform>) {}
 
 #[hot]
-fn observe_add_with_query(_trigger: Trigger<OnAdd, Transform>, query: Query<&Transform>) {}
+fn observe_add_with_query(_trigger: On<Add, Transform>, query: Query<&Transform>) {}
 
 #[hot]
-fn observe_add_with_mut_query(
-    _trigger: Trigger<OnAdd, Transform>,
-    mut query: Query<&mut Transform>,
-) {
-}
+fn observe_add_with_mut_query(_trigger: On<Add, Transform>, mut query: Query<&mut Transform>) {}
 
 #[hot]
 fn observe_add_with_mut_query_and_resource(
-    _trigger: Trigger<OnAdd, Transform>,
+    _trigger: On<Add, Transform>,
     mut query: Query<&mut Transform>,
     resource: ResMut<Time>,
 ) {
@@ -231,7 +227,7 @@ fn observe_add_with_mut_query_and_resource(
 
 #[hot]
 fn observe_add_with_mut_query_and_resource_and_commands(
-    _trigger: Trigger<OnAdd, Transform>,
+    _trigger: On<Add, Transform>,
     mut query: Query<&mut Transform>,
     resource: ResMut<Time>,
     mut commands: Commands,

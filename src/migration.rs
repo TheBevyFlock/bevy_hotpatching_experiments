@@ -3,7 +3,7 @@
 //! Implement [`Reflect`], [`HotPatchMigrate`], [`Default`] and [`Component`]
 //! and reflect them for the component you want to migrate.
 //! ```
-//! # use bevy_simple_subsecond_system::prelude::*;
+//! # use bevy_hotpatching_experiments::prelude::*;
 //! # use bevy::prelude::*;
 //! #[derive(Debug, Reflect, Component, Default, HotPatchMigrate)]
 //! #[reflect(Component, Default, HotPatchMigrate)]
@@ -15,7 +15,7 @@
 //! Additionally you will need to register these components and their
 //! new, hot patched versions. This can be done in a startup system like this:
 //! ```
-//! # use bevy_simple_subsecond_system::prelude::*;
+//! # use bevy_hotpatching_experiments::prelude::*;
 //! # use bevy::prelude::*;
 //! // When creating the app:
 //! // app.add_systems(Startup, register_components)
@@ -56,7 +56,7 @@ use core::any::{Any, TypeId};
 /// should be reflected.
 ///
 /// ```
-/// # use bevy_simple_subsecond_system::prelude::*;
+/// # use bevy_hotpatching_experiments::prelude::*;
 /// # use bevy::prelude::*;
 /// #[derive(Debug, Reflect, Component, Default, HotPatchMigrate)]
 /// #[reflect(Component, Default, HotPatchMigrate)]
