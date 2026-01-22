@@ -290,5 +290,6 @@ This allows you to e.g. add additional `Query` or `Res` parameters or modify exi
 
 | bevy | bevy_hotpatching_experiments |
 | ---- | ---------------------------- |
+| 0.18 | 0.4                          |
 | 0.17 | 0.3                          |
 | 0.16 | 0.2                          |
